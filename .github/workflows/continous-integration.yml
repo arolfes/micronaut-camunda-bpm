@@ -10,33 +10,31 @@ on:
     branches: [ master ]
 
 jobs:
-  build:
+  spotbugs:
     runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        java: ['8', '11', '15'] #Support LTS releases 8 and 11 and the latest release supported by Micronaut.
-        runtime: ['netty']
-        include: # Test more server runtimes on Java 8 only (to reduce number of combinations)
-          - java: '8'
-            runtime: 'jetty'
-          - java: '8'
-            runtime: 'tomcat'
-          - java: '8'
-            runtime: 'undertow'
-
     steps:
       - name: Git Checkout
         uses: actions/checkout@v2
       - name: Set up JDKs with Matrix Build
         uses: actions/setup-java@v1
         with:
-          java-version: ${{ matrix.java }}
+          java-version: 8
       - name: Cache Dependencies #see https://github.com/actions/cache/blob/master/examples.md#java---gradle
         uses: actions/cache@v2
         with:
           path: ~/.gradle/caches
-          key: ${{ runner.os }}-gradle-${{ hashFiles('**/*.gradle*') }}
+          key: spotbugs-gradle-${{ hashFiles('**/*.gradle*') }}
           restore-keys: |
-            ${{ runner.os }}-gradle-
-      - name: Build with Gradle Wrapper
-        run: ./gradlew build --warning-mode=fail -Pmicronaut.runtime=${{ matrix.runtime }}
+            spotbugs-gradle-
+      - name: spotbugs
+        id: spotbugs_checks
+        run: ./gradlew spotbugsMain
+        continue-on-error: true
+      - name: publish spotbugs
+        uses: jwgmeligmeyling/spotbugs-github-action@master
+        with:
+          path: '**/spotbugs/main.xml'
+          token: ${{ secrets.GITHUB_TOKEN }}
+#      - name: Check on failures
+#        if: steps.spotbugs_checks.outcome != 'success'
+#        run: exit 1

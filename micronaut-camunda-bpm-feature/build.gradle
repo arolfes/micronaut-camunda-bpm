@@ -6,6 +6,7 @@ plugins {
     id("org.jetbrains.kotlin.plugin.allopen")
     id("maven-publish")
     id("signing")
+    id("com.github.spotbugs")
 }
 
 group = "info.novatec"
@@ -129,4 +130,22 @@ signing {
 
 configurations {
     testArtifacts
+}
+
+spotbugs {
+    ignoreFailures = true
+    effort = 'more'
+}
+// Example to configure HTML report
+spotbugsMain {
+    reports {
+        xml {
+            enabled = true
+        }
+        html {
+            enabled = false
+            destination = file("$buildDir/reports/spotbugs/main/spotbugs.html")
+            stylesheet = 'fancy-hist.xsl'
+        }
+    }
 }
