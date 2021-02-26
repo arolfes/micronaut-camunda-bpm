@@ -14,3 +14,7 @@ camunda:
     enabled: true
   filter:
     create: "All tasks"
+datasources:
+  default:
+    maximum-pool-size: 44
+    minimum-idle: 11

@@ -37,7 +37,7 @@ public class DefaultPropertySourceLoader implements PropertySourceLoader, Ordere
     /**
      * Position for the system property source loader in the chain.
      */
-    protected static final int POSITION = Ordered.LOWEST_PRECEDENCE;
+    protected static final int POSITION = Ordered.HIGHEST_PRECEDENCE;
 
     /** The (Hikari) datasource pool size must be larger than the number of competing threads
      * so that they don't get blocked while waiting for a connection and smaller than the maximum parallel
@@ -64,7 +64,7 @@ public class DefaultPropertySourceLoader implements PropertySourceLoader, Ordere
                         new HashMap<String, Object>() {{
                             put("datasources.default.maximum-pool-size", MAXIMUM_POOL_SIZE);
                             put("datasources.default.minimum-idle", MINIMUM_POOL_SIZE);
-                        }}));
+                        }}, getOrder()));
     }
 
     @Override
