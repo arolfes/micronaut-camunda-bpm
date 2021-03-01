@@ -1,0 +1,13 @@
+version: '2'
+services:
+  eetp-postgres:
+    image: postgres:11-alpine
+    container_name: eetp-postgres
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      # Einen anderen Namen fuer den Zugriff auf die DB ausgewaehlt dami es naeher an die Produktion kommt
+      POSTGRES_PASSWORD: secret
+      POSTGRES_USER: postgres
+      POSTGRES_DB: camunda

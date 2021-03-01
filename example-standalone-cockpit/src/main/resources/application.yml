@@ -1,0 +1,35 @@
+micronaut:
+  application:
+    name: micronaut-standalone-camunda-cockpit
+  server:
+    port: 8081
+
+camunda:
+  admin-user:
+    id: admin
+    password: admin
+  generic-properties:
+    properties:
+      initialize-telemetry: false
+      history: audit
+      jobExecutorActivate: false
+  webapps:
+    enabled: true
+  rest:
+    enabled: false
+
+datasources:
+  default:
+    url: jdbc:postgresql://localhost:5432/camunda #configures connection url, postgres = database name
+    username: postgres #configures database username
+    password: secret
+    driver-class-name: org.postgresql.Driver
+    continue-on-error: false
+    dialect: POSTGRES
+    auto-commit: false
+    minimum-idle: 2
+    maximum-pool-size: 10
+    idle-timeout: 600000
+    data-source-properties:
+      reWriteBatchInserts: true
+      disableColumnSanitiser: true

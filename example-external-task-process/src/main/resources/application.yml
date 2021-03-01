@@ -1,3 +1,12 @@
 micronaut:
   application:
     name: micronaut-external-task-process
+
+datasources:
+  default:
+    url: jdbc:postgresql://localhost:5432/camunda #configures connection url, postgres = database name
+    username: postgres #configures database username
+    password: secret
+    driver-class-name: org.postgresql.Driver
+    continue-on-error: false
+    dialect: POSTGRES
