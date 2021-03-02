@@ -36,7 +36,7 @@ import java.sql.Connection;
  * Replacing the {@link CockpitRuntimeDelegate} on server startup makes sure that the following scenario in cockpit
  * to view process instances works: Cockpit / Process Definitions / Any Definition, e.g. HelloWorld
  * by embedding the command execution in a transaction.
- *
+ * <p>
  * Set a breakpoint in {@link JdbcTransaction#openConnection()} to see which data source is being used:
  * Works: {@link io.micronaut.configuration.jdbc.hikari.HikariUrlDataSource}
  * Doesn't work: {@link io.micronaut.transaction.jdbc.TransactionAwareDataSource}.
@@ -47,7 +47,7 @@ import java.sql.Connection;
  * @author Tobias Schäfer
  */
 @Singleton
-@Requires(property = "camunda.webapps.enabled", value="true")
+@Requires(property = "camunda.webapps.enabled", value = "true")
 public class CockpitRuntimeDelegateInitializer implements ApplicationEventListener<ServerStartupEvent> {
 
     private static final Logger log = LoggerFactory.getLogger(CockpitRuntimeDelegateInitializer.class);
@@ -66,11 +66,36 @@ public class CockpitRuntimeDelegateInitializer implements ApplicationEventListen
         Cockpit.setCockpitRuntimeDelegate(new DefaultCockpitRuntimeDelegate() {
             @Override
             protected CommandExecutor createCommandExecutor(String processEngineName) {
-                return new org.camunda.bpm.cockpit.impl.db.CommandExecutorImpl(processEngineConfiguration, getMappingFiles() ) {
+                return new org.camunda.bpm.cockpit.impl.db.CommandExecutorImpl(processEngineConfiguration, getMappingFiles()) {
                     @Override
                     public <T> T executeCommand(Command<T> command) {
-                        return transactionManager.executeWrite( transactionStatus -> super.executeCommand(command));
+//                        return transactionManager.executeWrite( transactionStatus -> super.executeCommand(command));
+                        return transactionManager.executeWrite(transactionStatus -> {
+
+                            //TODO DataSourceUtils.getConnection(dataSource, false);
+
+                            T t = super.executeCommand(command);
+                            Connection connection = null;
+                            // switch back to old fashion connection handling, that connection is not closed when no error occured
+                            try {
+                                connection = transactionManager.getConnection();
+                                if (connection.getAutoCommit()) {
+                                    log.debug("Resetting auto-commit to false ");
+                                    // TODO read from configuration instead setting it hard
+                                    connection.setAutoCommit(false);
+                                }
+                            } catch (Exception ex) {
+                                log.error("unable to change autocommit feature", ex);
+                                if (connection != null) {
+                                    connection.close();
+                                    throw ex;
+                                }
+                            }
+                            return t;
+                        });
+
                     }
+
                 };
             }
         });
