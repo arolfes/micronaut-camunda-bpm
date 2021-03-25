@@ -1,0 +1,41 @@
+micronaut:
+# play around with executors configuration, which fits best for your environment
+#  executors:
+#    io:
+## Type Cached
+#      type: CACHED
+#      n-threads: 30
+## Type WORK_STEALING
+#      type: WORK_STEALING
+#      parallelism: 6
+## Type Fixed
+#      type: FIXED
+#      number-of-threads: 12
+## Type scheduled (default when no type is set)
+#      type: SCHEDULED
+#      core-pool-size: 16
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+        step: PT1M
+        descriptions: true
+endpoints:
+  prometheus:
+    sensitive: false
+
+datasources:
+  default:
+    url: jdbc:postgresql://localhost:5432/camunda
+    username: micronaut
+    password: docker
+    driver-class-name: org.postgresql.Driver
+    continue-on-error: false
+    dialect: POSTGRES
+    auto-commit: false
+    minimum-idle: 10
+    maximum-pool-size: 50
+    idle-timeout: 600000
+    data-source-properties:
+      reWriteBatchInserts: true
+      disableColumnSanitiser: true

@@ -59,3 +59,51 @@ the data source's URL:
 `datasources.default.url: jdbc:h2:file:~/micronautdb;DB_CLOSE_ON_EXIT=FALSE`
 
 To reset the database simply delete the `micronautdb*` files in your home directory.
+
+## Load/Performance Tests
+
+To get some impression on how much memory is used, the application perform and so do the following:
+
+```bash
+# build the example application
+./gradlew clean build distTar
+
+# untar example application
+tar -C micronaut-camunda-bpm-example/build/distributions -xvf micronaut-camunda-bpm-example/build/distributions/micronaut-camunda-bpm-example-0.0.1-SNAPSHOT.tar
+
+# define current user ID for docker-compose.yml
+export UID=$(id -u)
+# define current group ID for docker-compose.yml
+export GID=$(id -g)
+# start postgres, prometheus, grafana
+docker-compose -f micronaut-camunda-bpm-example/docker-compose.yml up
+
+# define some Java Options
+export JAVA_OPTS="-Xmx512m -XX:+UseG1GC -XX:MaxRAMPercentage=75.0 -XX:+ExitOnOutOfMemoryError"
+# define micronaut environment to use postgres instead of h2
+export MICRONAUT_ENVIRONMENTS=postgres
+# start example application
+micronaut-camunda-bpm-example/build/distributions/micronaut-camunda-bpm-example-0.0.1-SNAPSHOT/bin/micronaut-camunda-bpm-example
+
+# start external worker
+./gradlew :example-external-task-worker:run
+
+# open grafana in your browser http://localhost:3000/
+# Login with admin/admin
+# Open JVM Dashboard and watch it
+# or open HikariCP Dashboard to see usage of connection pool
+ 
+# now start jmeter and open Loadtest.jmx and run it
+
+# keep watching grafana dashboard
+```
+
+![JVM Metrics 1](grafana_1.png)
+![JVM Metrics 2](grafana_2.png)
+![JVM Metrics 3](grafana_3.png)
+![JVM Metrics 4](grafana_4.png)
+![JVM Metrics 5](grafana_5.png)
+
+instead of watching grafana you can of course watch the metrics with visualvm or some other tool
+
+![VisualVM Metrics](visualvm.png)
